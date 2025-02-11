@@ -12,7 +12,7 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
-        public function register(RegisterRequest $request)
+    public function register(RegisterRequest $request)
     {
         try {
             $user = User::create([
@@ -27,7 +27,7 @@ class AuthController extends Controller
                 'access_token' => $token,
                 'token_type' => 'bearer',
                 'expires_in' => auth('api')->factory()->getTTL() * 60,
-                'user' => $user,
+                'user' => new UserResource($user)
             ], 200);
         } catch (\Exception $exception) {
             return response()->json([
