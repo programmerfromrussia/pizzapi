@@ -12,6 +12,15 @@ class User extends Authenticatable implements JWTSubject
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
+
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'phone',
+        'is_admin',
+    ];
+
         /**
      * Get the identifier that will be stored in the subject claim of the JWT.
      *

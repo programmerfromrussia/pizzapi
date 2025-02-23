@@ -24,22 +24,13 @@ class ProductController extends Controller
      */
     public function show(int $id)
     {
-        $product = Product::find($id);
+        $product = Product::findOrFail($id);
         if ($product) {
             return response()->json($product, 200);
         }
         return response()->json(['message' => 'Product not found'], 404);
 
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Product $product)
-    {
-        //
-    }
-
     /**
      * Update the specified resource in storage.
      */

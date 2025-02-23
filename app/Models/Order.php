@@ -2,18 +2,46 @@
 
 namespace App\Models;
 
-use App\Models\Location;
-use App\Models\OrderItem;
+use App\Enums\OrderStatus;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Order extends Model
 {
-    public function orderItem()
+    use HasFactory;
+
+    protected $fillable = [
+        'cart_id',
+        'status',
+    ];
+
+    protected $casts = [
+        'status' => OrderStatus::class,
+    ];
+
+    /**
+     * Get the cart that owns the order.
+     */
+    public function cart(): BelongsTo
+    {
+        return $this->belongsTo(Cart::class);
+    }
+
+    /**
+     * Get the items for the order.
+     */
+    public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
     }
 
-    public function location()
+    /**
+     * Get the location for the order.
+     */
+    public function location(): HasOne
     {
         return $this->hasOne(Location::class);
     }

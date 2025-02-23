@@ -19,4 +19,8 @@ class Product extends Model
         'is_available',
     ];
 
+    protected $casts = [
+        'price' => 'float',
+        'is_available' => 'boolean',
+    ];
 }

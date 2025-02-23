@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cart_id')->constrained('carts')->onDelete('cascade');
+            $table->string('status')->default('processing');
             $table->timestamps();
         });
     }

@@ -14,12 +14,16 @@ class AuthController extends Controller
 {
     public function register(RegisterRequest $request)
     {
+        \Log::info('Validation passed', $request->all());
         try {
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
             ]);
+
+            \Log::info('User created', $request->all());
+
 
             $token = JWTAuth::fromUser($user);
 
@@ -30,14 +34,20 @@ class AuthController extends Controller
                 'user' => new UserResource($user)
             ], 200);
         } catch (\Exception $exception) {
+            \Log::error('Register request canceled', [
+                'error' => $exception->getMessage(),
+                'trace' => $exception->getTraceAsString(),
+            ]);
             return response()->json([
-                'error' => 'Something went wrong. Please try again later.'
+                'error' => 'Registration went wrong. Please try again later.'
             ], 500);
         }
     }
 
     public function login(LoginRequest $request)
     {
+        \Log::info('Validation passed', $request->all());
+
         $credentials = $request->only('email', 'password');
 
         try {
@@ -51,11 +61,15 @@ class AuthController extends Controller
                 'access_token' => $token,
                 'token_type' => 'bearer',
                 'expires_in' => auth('api')->factory()->getTTL() * 60,
-                'user' => $user
+                'user' => $user,
             ], 200);
         } catch (\Exception $th) {
+            \Log::error('Register request canceled', [
+                'error' => $th->getMessage(),
+                'trace' => $th->getTraceAsString(),
+            ]);
             return response()->json([
-                'error' => 'Something went wrong. Please try again later.'
+                'error' => 'Something went wrong...'
             ], 500);
         }
     }
