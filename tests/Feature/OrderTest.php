@@ -197,4 +197,73 @@ class OrderTest extends TestCase
             'country' => 'USA',
         ]);
     }
+
+    #[Test]
+    public function test_admin_update_order()
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+
+        $order = Order::factory()->create();
+        Location::factory()->create([
+            'order_id' => $order->id,
+            'address' => '123 Main St',
+            'city' => 'New York',
+            'country' => 'USA',
+        ]);
+
+        $updatedData = [
+            'status' => 'delivered',
+            'address' => '456 Elm St',
+            'city' => 'Los Angeles',
+            'country' => 'USA',
+        ];
+
+        $response = $this->actingAs($admin, 'api')
+            ->putJson("/api/admin/orders/{$order->id}", $updatedData);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'message' => 'Order updated successfully',
+                'order' => [
+                    'id' => $order->id,
+                    'status' => 'delivered',
+                    'location' => [
+                        'address' => '456 Elm St',
+                        'city' => 'Los Angeles',
+                        'country' => 'USA',
+                ],
+            ],
+        ]);
+
+        $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'delivered']);
+        $this->assertDatabaseHas('locations', [
+            'order_id' => $order->id,
+            'address' => '456 Elm St',
+            'city' => 'Los Angeles',
+            'country' => 'USA',
+        ]);
+    }
+
+    #[Test]
+    public function test_admin_delete_order()
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $order = Order::factory()->create();
+        Location::factory()->create([
+            'order_id' => $order->id,
+            'address' => '123 Main St',
+            'city' => 'New York',
+            'country' => 'USA',
+        ]);
+
+        $response = $this->actingAs($admin, 'api')
+            ->deleteJson("/api/admin/orders/{$order->id}");
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'message' => 'Order deleted successfully',
+            ]);
+
+        $this->assertDatabaseMissing('orders', ['id' => $order->id]);
+    }
 }
