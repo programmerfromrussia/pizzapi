@@ -22,6 +22,7 @@ class OrderRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'status' => 'nullable|string|in:processing,shipped,delivered,cancelled',
             'address' => 'required|string',
             'city' => 'required|string',
             'country' => 'required|string',
