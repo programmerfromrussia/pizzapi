@@ -14,8 +14,8 @@ class ProductTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected $admin;
-    protected $user;
+    protected User $admin;
+    protected User $user;
 
     protected function setUp(): void
     {
