@@ -19,9 +19,9 @@ class OrderTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected $user;
-    protected $cart;
-    protected $product;
+    protected User $user;
+    protected Cart $cart;
+    protected Product $product;
 
     protected function setUp(): void
     {
