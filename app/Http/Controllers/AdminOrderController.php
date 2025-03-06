@@ -2,50 +2,37 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\AdminDeleteOrderAction;
+use App\Actions\AdminUpdateOrderAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderUpdateRequest;
-use App\Models\Order;
-use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\App;
 
 class AdminOrderController extends Controller
 {
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(OrderUpdateRequest $request, string $id)
+    // protected $updateOrderAction;
+    // public function __construct(AdminUpdateOrderAction $updateOrderAction)
+    // {
+    //     $this->updateOrderAction = $updateOrderAction;
+    // }
+    public function update(OrderUpdateRequest $request, int $id)
     {
+        $updateOrderAction = App::make(AdminUpdateOrderAction::class);
+
         $validated = $request->validated();
 
-        $order = Order::findOrFail($id);
-
-        if (isset($validated['status'])) {
-            $order->status = $validated['status'];
-        }
-
-        $locationData = Arr::only($validated, ['address', 'city', 'country']);
-
-        if (!empty($locationData)) {
-            $location = $order->location ?? $order->location()->create([]);
-            $location->update($locationData);
-        }
-
-        $order->save();
+        $order = $updateOrderAction->execute($validated, $id);
 
         return response()->json([
             'message' => 'Order updated successfully',
             'order' => $order,
         ], 200);
     }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(int $id)
     {
-        $order = Order::findOrFail($id);
+        $deleteOrderAction = App::make(AdminDeleteOrderAction::class);
 
-        $order->delete();
+        $order = $deleteOrderAction->execute($id);
 
         return response()->json([
             'message' => 'Order deleted successfully',
