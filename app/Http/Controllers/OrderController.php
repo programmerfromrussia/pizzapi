@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderRequest;
 use App\Http\Resources\OrderResource;
 use App\Models\Order;
-use Illuminate\Support\Facades\Log;
 use App\Services\OrderService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -16,7 +18,7 @@ class OrderController extends Controller
     {
         $this->orderService = $orderService;
     }
-    public function store(OrderRequest $request)
+    public function store(OrderRequest $request): JsonResponse
     {
         try {
             $result = $this->orderService->createOrder($request->validated());
@@ -29,7 +31,7 @@ class OrderController extends Controller
         }
     }
 
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
         $orders = $this->orderService->getOrders();
         \Log::info('Orders Data: ', $orders->toArray());
@@ -37,7 +39,7 @@ class OrderController extends Controller
         return OrderResource::collection($orders);
     }
 
-    public function show(Order $order)
+    public function show(Order $order): JsonResponse|OrderResource
     {
         try {
             $order = $this->orderService->getOrder($order);
@@ -47,7 +49,7 @@ class OrderController extends Controller
         }
     }
 
-    public function destroy(Order $order)
+    public function destroy(Order $order): JsonResponse
     {
         try {
             $result = $this->orderService->cancelOrder($order);
@@ -57,7 +59,7 @@ class OrderController extends Controller
         }
     }
 
-    public function update(OrderRequest $request, Order $order)
+    public function update(OrderRequest $request, Order $order): JsonResponse
     {
         try {
             $result = $this->orderService->updateOrder($order, $request->validated());

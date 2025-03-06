@@ -10,20 +10,20 @@ use Illuminate\Support\Facades\Auth;
 
 class CartService
 {
-    public function getCartId()
+    public function getCartId(): mixed
     {
         $userId = auth('api')->id();
         $cart = Cart::firstOrCreate(['user_id' => $userId]);
         return $cart->id;
     }
 
-    public function getCart()
+    public function getCart(): Cart
     {
         $userId = auth('api')->id();
         return Cart::firstOrCreate(['user_id' => $userId]);
     }
 
-    public function getCartItems()
+    public function getCartItems(): mixed
     {
         $userId = auth('api')->id();
         $cart = Cart::where('user_id', $userId)
@@ -33,7 +33,7 @@ class CartService
         return $cart ? $cart->cartItems : ['message' => 'No items found -_-'];
     }
 
-    public function addItemToCart(array $validated)
+    public function addItemToCart(array $validated): CartItem
     {
         $product = Product::findOrFail($validated['product_id']);
 
@@ -63,7 +63,7 @@ class CartService
         return $cartItem;
     }
 
-    public function updateCartItem(int $id, array $validated)
+    public function updateCartItem(int $id, array $validated): CartItem
     {
         $cartItem = CartItem::findOrFail($id);
         $product = $cartItem->product;
@@ -92,7 +92,7 @@ class CartService
         return $cartItem;
     }
 
-    public function removeCartItem(int $id)
+    public function removeCartItem(int $id): array
     {
         $cartItem = CartItem::whereHas('cart', function ($query) {
             $query->where('user_id', auth('api')->id());

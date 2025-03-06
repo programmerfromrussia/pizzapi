@@ -5,15 +5,13 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductRequest;
 use App\Models\Product;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-
+use Illuminate\Http\JsonResponse;
 class AdminProductController extends Controller
 {
     /**
      * Store a newly created resource in storage.
      */
-    public function store(ProductRequest $request)
+    public function store(ProductRequest $request): JsonResponse
     {
         try {
             $product = Product::create($request->validated());
@@ -26,7 +24,7 @@ class AdminProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(ProductRequest $request, $id)
+    public function update(ProductRequest $request, int $id): JsonResponse
     {
         try {
             $product = Product::findOrFail($id);
@@ -41,7 +39,7 @@ class AdminProductController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id)
+    public function destroy(int $id): JsonResponse
     {
         $product = Product::find($id);
         if (!$product) {
