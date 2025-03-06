@@ -32,9 +32,6 @@ jobs:
       - name: Install dependencies
         run: composer install --no-progress --prefer-dist --optimize-autoloader
 
-      - name: Generate key
-        run: php artisan key:generate
-
       - name: Run tests
         run: vendor/bin/phpunit --configuration phpunit.xml
 
