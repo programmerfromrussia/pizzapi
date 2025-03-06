@@ -6,26 +6,13 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-
-
-
-
-
-Route::middleware(['session'])->get('/user', function (Request $request) {
-    return $request->user();
-});
-
-
-Route::resource('/product', ProductController::class)->only([
-    'index', 'show'
-]);
-
-//authorisation
+//публичные пути, без авторизации
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login'])->name('login');//короче, все будут перенаправляться сюда
+Route::post('/login', [AuthController::class, 'login']);
+Route::get('/products', [ProductController::class, 'index']);
+Route::get('/products/{id}', [ProductController::class, 'show']);
 
 //только для авторизованных пользователей
 Route::middleware('auth:api')->group(function(){
@@ -39,9 +26,9 @@ Route::middleware('auth:api')->group(function(){
 
 //только для администратора
 Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
-    Route::post('/products', [AdminProductController::class, 'store']);
-    Route::put('/products/{id}', [AdminProductController::class, 'update']);
-    Route::delete('/products/{id}', [AdminProductController::class, 'destroy']);
+    Route::resource('/products', AdminProductController::class)->only([
+        'store', 'update', 'destroy'
+    ]);
     Route::put('/orders/{id}', [AdminOrderController::class, 'update']);
     Route::delete('/orders/{id}', [AdminOrderController::class, 'destroy']);
 });
