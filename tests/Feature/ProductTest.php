@@ -104,7 +104,7 @@ class ProductTest extends TestCase
     {
         Product::factory()->count(3)->create();
 
-        $response = $this->getJson('/api/product');
+        $response = $this->getJson('/api/products');
 
         $response->assertStatus(200)
                 ->assertJsonCount(3);
