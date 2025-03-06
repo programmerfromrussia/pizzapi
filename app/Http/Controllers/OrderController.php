@@ -2,15 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderRequest;
 use App\Http\Resources\OrderResource;
-use App\Models\Cart;
-use App\Models\Location;
 use App\Models\Order;
-use App\Models\OrderItem;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Services\OrderService;
 
