@@ -6,6 +6,7 @@ use App\Actions\AdminDeleteOrderAction;
 use App\Actions\AdminUpdateOrderAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderUpdateRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\App;
 
 class AdminOrderController extends Controller
@@ -15,7 +16,7 @@ class AdminOrderController extends Controller
     // {
     //     $this->updateOrderAction = $updateOrderAction;
     // }
-    public function update(OrderUpdateRequest $request, int $id)
+    public function update(OrderUpdateRequest $request, int $id): JsonResponse
     {
         $updateOrderAction = App::make(AdminUpdateOrderAction::class);
 
@@ -28,7 +29,7 @@ class AdminOrderController extends Controller
             'order' => $order,
         ], 200);
     }
-    public function destroy(int $id)
+    public function destroy(int $id): JsonResponse
     {
         $deleteOrderAction = App::make(AdminDeleteOrderAction::class);
 

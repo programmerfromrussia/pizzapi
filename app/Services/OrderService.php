@@ -2,18 +2,19 @@
 
 namespace App\Services;
 
+use App\DTO\OrderDTO;
 use App\Enums\OrderStatus;
 use App\Models\Cart;
 use App\Models\Location;
 use App\Models\Order;
 use App\Models\OrderItem;
-use Illuminate\Support\Arr;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class OrderService
 {
-    public function createOrder(array $data)
+    public function createOrder(OrderDTO $dto): array
     {
         DB::beginTransaction();
         try {
@@ -39,9 +40,9 @@ class OrderService
             }
 
             Location::create([
-                'address' => $data['address'],
-                'city' => $data['city'],
-                'country' => $data['country'],
+                'address' => $dto->address,
+                'city' => $dto->city,
+                'country' => $dto->country,
                 'order_id' => $order->id,
             ]);
 
@@ -55,20 +56,20 @@ class OrderService
             ];
         } catch (\Throwable $th) {
             DB::rollBack();
-            Log::error('Failed to create order: ' . $th->getMessage());
             throw $th;
         }
     }
 
-    public function getOrders()
+    public function getOrders(): LengthAwarePaginator
     {
         $user = auth('api')->user();
         return Order::whereHas('cart', function ($query) use ($user) {
             $query->where('user_id', $user->id);
-        })->with(['location', 'orderItems'])->get();
+        })->with(['location', 'orderItems'])
+        ->paginate();
     }
 
-    public function getOrder(Order $order)
+    public function getOrder(Order $order): Order
     {
         if ($order->cart->user_id !== auth('api')->id()) {
             throw new \Exception('Unauthorized user, авторизуйся, ок?', 403);
@@ -77,7 +78,7 @@ class OrderService
         return $order->loadMissing('location', 'orderItems');
     }
 
-    public function cancelOrder(Order $order)
+    public function cancelOrder(Order $order): array
     {
         if ($order->cart->user_id !== auth('api')->id()) {
             throw new \Exception('Unauthorized', 403);
@@ -87,17 +88,16 @@ class OrderService
 
         return ['message' => 'Order cancelled successfully'];
     }
-
-    public function updateOrder(Order $order, array $data)
+    public function updateOrder(Order $order, OrderDTO $dto): array
     {
         if ($order->cart->user_id !== auth('api')->id()) {
             throw new \Exception('Unauthorized', 403);
         }
 
         $order->location->update([
-            'address' => $data['address'],
-            'city' => $data['city'],
-            'country' => $data['country'],
+            'address' => $dto->address,
+            'city' => $dto->city,
+            'country' => $dto->country,
         ]);
 
         return [

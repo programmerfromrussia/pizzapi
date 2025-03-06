@@ -7,12 +7,14 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
-    public function register(RegisterRequest $request)
+    public function register(RegisterRequest $request): JsonResponse
     {
         \Log::info('Validation passed', $request->all());
         try {
@@ -44,7 +46,7 @@ class AuthController extends Controller
         }
     }
 
-    public function login(LoginRequest $request)
+    public function login(LoginRequest $request): JsonResponse
     {
         \Log::info('Validation passed', $request->all());
 
@@ -74,7 +76,7 @@ class AuthController extends Controller
         }
     }
 
-    public function logout()
+    public function logout(): JsonResponse
     {
         try {
             JWTAuth::invalidate(JWTAuth::getToken());

@@ -107,6 +107,18 @@ class ProductTest extends TestCase
         $response = $this->getJson('/api/products');
 
         $response->assertStatus(200)
-                ->assertJsonCount(3);
+            ->assertJsonStructure([
+                'current_page',
+                'data',
+                'first_page_url',
+                'last_page',
+                'next_page_url',
+                'prev_page_url',
+                'path',
+                'per_page',
+                'to',
+                'total',
+            ])
+            ->assertJsonCount(3, 'data');
     }
 }

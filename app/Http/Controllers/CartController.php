@@ -1,15 +1,11 @@
 <?php
 namespace App\Http\Controllers;
 
-use App\Enums\CartLimit;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CartRequest;
-use App\Models\Cart;
-use App\Models\CartItem;
-use App\Models\Product;
 use App\Services\CartService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
@@ -18,14 +14,14 @@ class CartController extends Controller
     {
         $this->cartService = $cartService;
     }
-    public function index()
+    public function index(): JsonResponse
     {
         $cartItems = $this->cartService->getCartItems();
 
         return response()->json($cartItems ? $cartItems : ['message' => 'No items found -_-'], 200);
     }
 
-    public function store(CartRequest $request)
+    public function store(CartRequest $request): JsonResponse
     {
         try {
             $validated = $request->validated();
@@ -39,7 +35,7 @@ class CartController extends Controller
             return response()->json(['message' => $e->getMessage()], 400);
         }
     }
-    public function update(Request $request, int $id)
+    public function update(Request $request, int $id): JsonResponse
     {
         try {
             $validated = $request->validate([
@@ -53,7 +49,7 @@ class CartController extends Controller
         }
     }
 
-    public function destroy(int $id)
+    public function destroy(int $id): JsonResponse
     {
         $result = $this->cartService->removeCartItem($id);
 
