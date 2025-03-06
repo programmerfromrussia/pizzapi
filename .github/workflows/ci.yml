@@ -52,7 +52,11 @@ jobs:
         run: php artisan key:generate
 
       - name: Run migrations
-        run: php artisan migrate --env=testing
+        run: |
+          php artisan migrate --env=testing
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          php artisan config:clear
+          php artisan jwt:secret
         env:
           DB_CONNECTION: mysql
           DB_HOST: 127.0.0.1
@@ -64,6 +68,7 @@ jobs:
       - name: Run tests
         run: vendor/bin/phpunit --configuration phpunit.xml
         env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
           DB_CONNECTION: mysql
           DB_HOST: 127.0.0.1
           DB_PORT: 3306
