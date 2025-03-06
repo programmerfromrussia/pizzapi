@@ -16,7 +16,7 @@ jobs:
         image: mysql:8.0
         env:
           MYSQL_ROOT_PASSWORD: password
-          MYSQL_DATABASE: laravel
+          MYSQL_DATABASE: testing
         ports:
           - 3306:3306
         options: >-
@@ -49,6 +49,14 @@ jobs:
 
       - name: Generate key
         run: php artisan key:generate
+
+      - name: Run migrations
+        run: php artisan migrate --env=testing
+
+      - name: Debug MySQL connection
+        run: |
+          sudo apt-get install mysql-client -y
+          mysql -h 127.0.0.1 -u root -ppassword -e "SHOW DATABASES;"
 
       - name: Run tests
         run: vendor/bin/phpunit --configuration phpunit.xml
