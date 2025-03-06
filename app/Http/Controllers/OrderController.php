@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\DTO\OrderDTO;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderRequest;
 use App\Http\Resources\OrderResource;
@@ -9,7 +10,6 @@ use App\Models\Order;
 use App\Services\OrderService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -21,7 +21,8 @@ class OrderController extends Controller
     public function store(OrderRequest $request): JsonResponse
     {
         try {
-            $result = $this->orderService->createOrder($request->validated());
+            $dto = new OrderDTO($request->validated());
+            $result = $this->orderService->createOrder($dto);
             return response()->json([
                 'message' => $result['message'],
                 'order' => new OrderResource($result['order']),
@@ -34,7 +35,6 @@ class OrderController extends Controller
     public function index(): AnonymousResourceCollection
     {
         $orders = $this->orderService->getOrders();
-        \Log::info('Orders Data: ', $orders->toArray());
 
         return OrderResource::collection($orders);
     }
@@ -62,7 +62,8 @@ class OrderController extends Controller
     public function update(OrderRequest $request, Order $order): JsonResponse
     {
         try {
-            $result = $this->orderService->updateOrder($order, $request->validated());
+            $dto = new OrderDTO($request->validated());
+            $result = $this->orderService->updateOrder($order, $dto);
             return response()->json([
                 'message' => $result['message'],
                 'order' => new OrderResource($result['order']),
