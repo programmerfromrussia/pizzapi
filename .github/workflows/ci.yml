@@ -77,4 +77,4 @@ jobs:
           DB_PASSWORD: password
 
       - name: Run PHP-CS-Fixer
-        run: sail php vendor/bin/php-cs-fixer fix --diff --verbose
+        run: vendor/bin/php-cs-fixer fix --diff --verbose
