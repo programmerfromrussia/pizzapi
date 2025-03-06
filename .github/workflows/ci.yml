@@ -76,3 +76,5 @@ jobs:
           DB_USERNAME: root
           DB_PASSWORD: password
 
+      - name: Run PHP-CS-Fixer
+        run: vendor/bin/php-cs-fixer fix --dry-run --diff
