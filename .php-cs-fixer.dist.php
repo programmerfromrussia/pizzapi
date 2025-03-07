@@ -2,11 +2,16 @@
 
 $finder = PhpCsFixer\Finder::create()
     ->in(__DIR__)
-    ->exclude('vendor');
+    ->exclude('vendor')
+    ->name('*.php')
+    ->notName('*.blade.php');
 
-return (new PhpCsFixer\Config())
+return PhpCsFixer\Config::create()
     ->setRules([
         '@PSR12' => true,
         'array_syntax' => ['syntax' => 'short'],
+        'blank_line_after_opening_tag' => true,
+        'no_trailing_whitespace' => true,
+        'single_blank_line_at_eof' => true,
     ])
     ->setFinder($finder);
