@@ -15,7 +15,7 @@ Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/{id}', [ProductController::class, 'show']);
 
 //только для авторизованных пользователей
-Route::middleware('auth:api')->group(function(){
+Route::middleware('auth:api')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::resource('/cart', CartController::class)->only([
         'index', 'store', 'update', 'destroy'

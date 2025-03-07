@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
@@ -53,5 +54,6 @@ class CartController extends Controller
     {
         $result = $this->cartService->removeCartItem($id);
 
-        return response()->json($result, 200);    }
+        return response()->json($result, 200);
+    }
 }

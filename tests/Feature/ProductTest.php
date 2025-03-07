@@ -9,7 +9,6 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use PHPUnit\Framework\Attributes\Test;
 
-
 class ProductTest extends TestCase
 {
     use RefreshDatabase;

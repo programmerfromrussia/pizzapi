@@ -45,7 +45,7 @@ class OrderController extends Controller
             $order = $this->orderService->getOrder($order);
             return new OrderResource($order->loadMissing('location', 'orderItems'));
         } catch (\Throwable $th) {
-           return response()->json(['message' => $th->getMessage()], $th->getCode() ?: 500);
+            return response()->json(['message' => $th->getMessage()], $th->getCode() ?: 500);
         }
     }
 
