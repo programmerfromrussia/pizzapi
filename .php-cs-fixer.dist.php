@@ -6,7 +6,7 @@ $finder = PhpCsFixer\Finder::create()
     ->name('*.php')
     ->notName('*.blade.php');
 
-return new PhpCsFixer\Config()
+return (new PhpCsFixer\Config())
     ->setRules([
         '@PSR12' => true,
         'array_syntax' => ['syntax' => 'short'],
