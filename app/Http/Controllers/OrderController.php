@@ -21,8 +21,9 @@ class OrderController extends Controller
     public function store(OrderRequest $request): JsonResponse
     {
         try {
+            $user = auth('api')->user();
             $dto = new OrderDTO($request->validated());
-            $result = $this->orderService->createOrder($dto);
+            $result = $this->orderService->createOrder($dto, $user->id);
             return response()->json([
                 'message' => $result['message'],
                 'order' => new OrderResource($result['order']),

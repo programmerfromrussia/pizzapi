@@ -14,12 +14,11 @@ use Illuminate\Support\Facades\Log;
 
 class OrderService
 {
-    public function createOrder(OrderDTO $dto): array
+    public function createOrder(OrderDTO $dto, int $userId): array
     {
         DB::beginTransaction();
         try {
-            $user = auth('api')->user();
-            $cart = Cart::where('user_id', $user->id)->with('cartItems.product')->first();
+            $cart = Cart::where('user_id', $userId)->with('cartItems.product')->first();
 
             if (!$cart || $cart->cartItems->isEmpty()) {
                 throw new \Exception('Cart is empty');
