@@ -17,7 +17,8 @@ class CartController extends Controller
     }
     public function index(): JsonResponse
     {
-        $cartItems = $this->cartService->getCartItems();
+        $userId = auth('api')->id();
+        $cartItems = $this->cartService->getCartItems($userId);
 
         return response()->json($cartItems ? $cartItems : ['message' => 'No items found -_-'], 200);
     }
@@ -26,7 +27,8 @@ class CartController extends Controller
     {
         try {
             $validated = $request->validated();
-            $cartItem = $this->cartService->addItemToCart($validated);
+            $userId = auth('api')->id();
+            $cartItem = $this->cartService->addItemToCart($validated, $userId);
 
             return response()->json([
                 'item' => $cartItem,
@@ -36,23 +38,26 @@ class CartController extends Controller
             return response()->json(['message' => $e->getMessage()], 400);
         }
     }
-    public function update(Request $request, int $id): JsonResponse
+    public function update(Request $request, int $cartId): JsonResponse
     {
         try {
             $validated = $request->validate([
                 'quantity' => 'required|integer|min:1',
             ]);
 
-            $cartItem = $this->cartService->updateCartItem($id, $validated);
+            $userId = auth('api')->id();
+            $cartItem = $this->cartService->updateCartItem($cartId, $validated, $userId);
             return response()->json($cartItem, 200);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 400);
         }
     }
 
-    public function destroy(int $id): JsonResponse
+    public function destroy(int $cartId): JsonResponse
     {
-        $result = $this->cartService->removeCartItem($id);
+
+        $userId = auth('api')->id();
+        $result = $this->cartService->removeCartItem($cartId, $userId);
 
         return response()->json($result, 200);
     }

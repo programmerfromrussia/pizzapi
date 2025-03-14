@@ -83,7 +83,7 @@ class CartTest extends TestCase
                  'price' => $product->price,
              ])
              ->assertStatus(400)
-             ->assertJson(['message' => 'Cannot add more than ' . CartLimit::PIZZA->value . ' items of category Пицца.']);
+             ->assertJson(['message' => 'Cannot have more than ' . CartLimit::PIZZA->value . ' items of category Пицца.']);
     }
 
     #[Test]

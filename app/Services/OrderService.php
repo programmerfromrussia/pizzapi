@@ -10,7 +10,6 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 class OrderService
 {
@@ -59,40 +58,27 @@ class OrderService
         }
     }
 
-    public function getOrders(): LengthAwarePaginator
+    public function getOrders(int $userId): LengthAwarePaginator
     {
-        $user = auth('api')->user();
-        return Order::whereHas('cart', function ($query) use ($user) {
-            $query->where('user_id', $user->id);
-        })->with(['location', 'orderItems'])
+        return Order::whereHas('cart', function ($query) use ($userId): void {
+            $query->where('user_id', $userId);
+        })->with(relations: ['location', 'orderItems'])
         ->paginate();
     }
 
     public function getOrder(Order $order): Order
     {
-        if ($order->cart->user_id !== auth('api')->id()) {
-            throw new \Exception('Unauthorized user, авторизуйся, ок?', 403);
-        }
-
         return $order->loadMissing('location', 'orderItems');
     }
 
     public function cancelOrder(Order $order): array
     {
-        if ($order->cart->user_id !== auth('api')->id()) {
-            throw new \Exception('Unauthorized', 403);
-        }
-
         $order->update(['status' => OrderStatus::CANCELLED]);
 
         return ['message' => 'Order cancelled successfully'];
     }
     public function updateOrder(Order $order, OrderDTO $dto): array
     {
-        if ($order->cart->user_id !== auth('api')->id()) {
-            throw new \Exception('Unauthorized', 403);
-        }
-
         $order->location->update([
             'address' => $dto->address,
             'city' => $dto->city,

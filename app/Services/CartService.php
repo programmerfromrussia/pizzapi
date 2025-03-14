@@ -6,26 +6,24 @@ use App\Enums\CartLimit;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
-use Illuminate\Support\Facades\Auth;
+use App\Exceptions\CartLimitException;
+
 
 class CartService
 {
-    public function getCartId(): mixed
+    public function getCartId(int $userId): mixed
     {
-        $userId = auth('api')->id();
         $cart = Cart::firstOrCreate(['user_id' => $userId]);
         return $cart->id;
     }
 
-    public function getCart(): Cart
+    public function getCart(int $userId): Cart
     {
-        $userId = auth('api')->id();
         return Cart::firstOrCreate(['user_id' => $userId]);
     }
 
-    public function getCartItems(): mixed
+    public function getCartItems(int $userId): mixed
     {
-        $userId = auth('api')->id();
         $cart = Cart::where('user_id', $userId)
                     ->with('cartItems')
                     ->first();
@@ -33,28 +31,15 @@ class CartService
         return $cart ? $cart->cartItems : ['message' => 'No items found -_-'];
     }
 
-    public function addItemToCart(array $validated): CartItem
+    public function addItemToCart(array $validated, int $userId): CartItem
     {
         $product = Product::findOrFail($validated['product_id']);
-
-        $categoryLimits = [
-            'Пицца' => CartLimit::PIZZA->value,
-            'Напитки' => CartLimit::DRINKS->value,
-        ];
-
-        if (isset($categoryLimits[$product->category])) {
-            $count = CartItem::where('cart_id', $this->getCartId())
-                             ->whereHas('product', function ($query) use ($product) {
-                                 $query->where('category', $product->category);
-                             })
-                             ->sum('quantity');
-
-            if ($count + $validated['quantity'] > $categoryLimits[$product->category]) {
-                throw new \Exception("Cannot add more than {$categoryLimits[$product->category]} items of category {$product->category}.");
-            }
+        if (!$product instanceof Product) {
+            throw new \RuntimeException('Expected a Product instance, but got something else.');
         }
+        $this->validateCategoryLimit($userId, $product, $validated['quantity']);
 
-        $cart = $this->getCart();
+        $cart = $this->getCart($userId);
         $cartItem = $cart->cartItems()->updateOrCreate(
             ['product_id' => $validated['product_id']],
             ['quantity' => $validated['quantity'], 'price' => $product->price]
@@ -63,43 +48,49 @@ class CartService
         return $cartItem;
     }
 
-    public function updateCartItem(int $id, array $validated): CartItem
+    public function updateCartItem(int $cartId, array $validated, int $userId): CartItem
     {
-        $cartItem = CartItem::findOrFail($id);
+        $cartItem = CartItem::findOrFail($cartId);
         $product = $cartItem->product;
 
+        $quantityChange = $validated['quantity'] - $cartItem->quantity;
+        $this->validateCategoryLimit($userId, $product, $quantityChange);
+
+        $cartItem->update(['quantity' => $validated['quantity']]);
+        return $cartItem;
+    }
+
+    public function removeCartItem(int $cartId, int $userId): array
+    {
+        $cartItem = CartItem::whereHas('cart', function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        })->findOrFail($cartId);
+
+        $cartItem->delete();
+
+        return ['message' => 'Cart item removed'];
+    }
+    private function validateCategoryLimit(int $userId, Product $product, int $quantityChange): void
+    {
         $categoryLimits = [
             'Пицца' => CartLimit::PIZZA->value,
             'Напитки' => CartLimit::DRINKS->value,
         ];
 
-        if (isset($categoryLimits[$product->category])) {
-            $currentQuantity = $cartItem->quantity;
-            $newQuantity = $validated['quantity'];
-            $totalQuantity = CartItem::where('cart_id', $this->getCartId())
-                                     ->whereHas('product', function ($query) use ($product) {
-                                         $query->where('category', $product->category);
-                                     })
-                                     ->sum('quantity') - $currentQuantity + $newQuantity;
-
-            if ($totalQuantity > $categoryLimits[$product->category]) {
-                throw new \Exception("Cannot have more than {$categoryLimits[$product->category]} items of category {$product->category}.");
-            }
+        if (!isset($categoryLimits[$product->category])) {
+            throw new CartLimitException("Category {$product->category} is not supported.");
         }
 
-        $cartItem->update(['quantity' => $validated['quantity']]);
+        $currentQuantity = CartItem::where('cart_id', $this->getCart(userId: $userId)->id)
+                                   ->whereHas('product', function ($query) use ($product): void {
+                                       $query->where('category', $product->category);
+                                   })
+                                   ->sum('quantity');
 
-        return $cartItem;
-    }
+        $totalQuantity = $currentQuantity + $quantityChange;
 
-    public function removeCartItem(int $id): array
-    {
-        $cartItem = CartItem::whereHas('cart', function ($query) {
-            $query->where('user_id', auth('api')->id());
-        })->findOrFail($id);
-
-        $cartItem->delete();
-
-        return ['message' => 'Cart item removed'];
+        if ($totalQuantity > $categoryLimits[$product->category]) {
+            throw new CartLimitException("Cannot have more than {$categoryLimits[$product->category]} items of category {$product->category}.");
+        }
     }
 }

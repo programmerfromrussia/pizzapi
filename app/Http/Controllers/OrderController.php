@@ -35,7 +35,8 @@ class OrderController extends Controller
 
     public function index(): AnonymousResourceCollection
     {
-        $orders = $this->orderService->getOrders();
+        $user = auth('api')->user();
+        $orders = $this->orderService->getOrders($user->id);
 
         return OrderResource::collection($orders);
     }

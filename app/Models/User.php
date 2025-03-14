@@ -22,6 +22,15 @@ class User extends Authenticatable implements JWTSubject
         'is_admin',
     ];
 
+    public function carts()
+    {
+        return $this->hasMany(Cart::class);
+    }
+    public function orders()
+    {
+        return $this->hasManyThrough(Order::class, Cart::class);
+    }
+
     /**
      * Get the identifier that will be stored in the subject claim of the JWT.
      *

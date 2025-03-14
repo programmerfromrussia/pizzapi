@@ -33,6 +33,3 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
     Route::delete('/orders/{id}', [AdminOrderController::class, 'destroy']);
 });
 
-
-
-//auth:api
