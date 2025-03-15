@@ -8,12 +8,13 @@ use App\Models\Cart;
 use App\Models\Location;
 use App\Models\Order;
 use App\Models\OrderItem;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 class OrderService
 {
-    public function createOrder(OrderDTO $dto, int $userId): array
+    public function createOrder(OrderDTO $dto, int $userId): JsonResponse
     {
         DB::beginTransaction();
         try {
@@ -48,10 +49,10 @@ class OrderService
 
             DB::commit();
 
-            return [
+            return response()->json(data: [
                 'message' => 'Order created successfully',
                 'order' => $order,
-            ];
+            ], status: 200);
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -71,13 +72,15 @@ class OrderService
         return $order->loadMissing('location', 'orderItems');
     }
 
-    public function cancelOrder(Order $order): array
+    public function cancelOrder(Order $order): JsonResponse
     {
         $order->update(['status' => OrderStatus::CANCELLED]);
 
-        return ['message' => 'Order cancelled successfully'];
+        return response()->json(data: [
+            'message' => 'Order cancelled successfully',
+        ], status: 200);
     }
-    public function updateOrder(Order $order, OrderDTO $dto): array
+    public function updateOrder(Order $order, OrderDTO $dto): JsonResponse
     {
         $order->location->update([
             'address' => $dto->address,
@@ -85,9 +88,9 @@ class OrderService
             'country' => $dto->country,
         ]);
 
-        return [
+        return response()->json(data: [
             'message' => 'Order updated successfully',
             'order' => $order,
-        ];
+        ], status: 200);
     }
 }

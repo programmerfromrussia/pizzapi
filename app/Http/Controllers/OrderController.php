@@ -21,33 +21,43 @@ class OrderController extends Controller
     public function store(OrderRequest $request): JsonResponse
     {
         try {
-            $user = auth('api')->user();
-            $dto = new OrderDTO($request->validated());
-            $result = $this->orderService->createOrder($dto, $user->id);
-            return response()->json([
-                'message' => $result['message'],
-                'order' => new OrderResource($result['order']),
-            ], 201);
-        } catch (\Throwable $th) {
-            return response()->json(['message' => $th->getMessage()], $th->getCode() ?: 500);
+            $user = auth(guard: 'api')->user();
+
+            $dto = new OrderDTO(data: $request->validated());
+
+            $order = $this->orderService->createOrder(dto: $dto, userId: $user->id);
+
+            return response()->json(data: [
+                'message' => 'Order created successfully',
+                'order' => new OrderResource(resource: $order),
+            ], status: 201);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(data: ['message' => $e->getMessage()], status: 400);
+        } catch (\Exception $e) {
+            \Log::error(message: 'Order creation failed: ' . $e->getMessage(), context: [
+                'exception' => $e,
+                'user_id' => auth(guard: 'api')->id(),
+            ]);
+
+            return response()->json(data: ['message' => 'An unexpected error occurred'], status: 500);
         }
     }
 
     public function index(): AnonymousResourceCollection
     {
-        $user = auth('api')->user();
-        $orders = $this->orderService->getOrders($user->id);
+        $user = auth(guard: 'api')->user();
+        $orders = $this->orderService->getOrders(userId: $user->id);
 
-        return OrderResource::collection($orders);
+        return OrderResource::collection(resource: $orders);
     }
 
     public function show(Order $order): JsonResponse|OrderResource
     {
         try {
-            $order = $this->orderService->getOrder($order);
+            $order = $this->orderService->getOrder(order: $order);
             return new OrderResource($order->loadMissing('location', 'orderItems'));
         } catch (\Throwable $th) {
-            return response()->json(['message' => $th->getMessage()], $th->getCode() ?: 500);
+            return response()->json(data: ['message' => $th->getMessage()], status: $th->getCode() ?: 500);
         }
     }
 
@@ -60,18 +70,33 @@ class OrderController extends Controller
             return response()->json(['message' => $th->getMessage()], $th->getCode() ?: 500);
         }
     }
-
     public function update(OrderRequest $request, Order $order): JsonResponse
     {
         try {
-            $dto = new OrderDTO($request->validated());
-            $result = $this->orderService->updateOrder($order, $dto);
-            return response()->json([
-                'message' => $result['message'],
-                'order' => new OrderResource($result['order']),
+            $dto = new OrderDTO(data: $request->validated());
+
+            $updatedOrder = $this->orderService->updateOrder(order: $order, dto: $dto);
+
+            return response()->json(data: [
+                'message' => 'Order updated successfully',
+                'order' => new OrderResource(resource: $updatedOrder),
+            ], status: 200);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(
+                data: [
+                'message' => $e->getMessage()],
+                status: 400
+            );
+        } catch (\Exception $e) {
+            \Log::error(message: 'Order update failed: ' . $e->getMessage(), context: [
+                'exception' => $e,
+                'order_id' => $order->id,
             ]);
-        } catch (\Throwable $th) {
-            return response()->json(['message' => $th->getMessage()], $th->getCode() ?: 500);
+            return response()->json(
+                data: [
+                'message' => 'An unexpected error occurred'],
+                status: 500
+            );
         }
     }
 }
