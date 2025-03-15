@@ -32,4 +32,3 @@ Route::middleware(['auth:api', 'admin'])->prefix('admin')->group(function () {
     Route::put('/orders/{id}', [AdminOrderController::class, 'update']);
     Route::delete('/orders/{id}', [AdminOrderController::class, 'destroy']);
 });
-

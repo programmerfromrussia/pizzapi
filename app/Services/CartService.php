@@ -8,7 +8,6 @@ use App\Models\CartItem;
 use App\Models\Product;
 use App\Exceptions\CartLimitException;
 
-
 class CartService
 {
     public function getCartId(int $userId): mixed
