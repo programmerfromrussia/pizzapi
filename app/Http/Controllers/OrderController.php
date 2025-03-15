@@ -64,8 +64,8 @@ class OrderController extends Controller
     public function destroy(Order $order): JsonResponse
     {
         try {
-            $result = $this->orderService->cancelOrder($order);
-            return response()->json($result);
+            $this->orderService->cancelOrder($order);
+            return response()->json(['message' => 'Order cancelled successfully'], 200);
         } catch (\Throwable $th) {
             return response()->json(['message' => $th->getMessage()], $th->getCode() ?: 500);
         }

@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
 
 class OrderService
 {
-    public function createOrder(OrderDTO $dto, int $userId): JsonResponse
+    public function createOrder(OrderDTO $dto, int $userId): Order
     {
         DB::beginTransaction();
         try {
@@ -49,10 +49,7 @@ class OrderService
 
             DB::commit();
 
-            return response()->json(data: [
-                'message' => 'Order created successfully',
-                'order' => $order,
-            ], status: 200);
+            return $order;
         } catch (\Throwable $th) {
             DB::rollBack();
             throw $th;
@@ -61,9 +58,9 @@ class OrderService
 
     public function getOrders(int $userId): LengthAwarePaginator
     {
-        return Order::whereHas('cart', function ($query) use ($userId): void {
+        return Order::whereHas('cart', function ($query) use ($userId) {
             $query->where('user_id', $userId);
-        })->with(relations: ['location', 'orderItems'])
+        })->with(['location', 'orderItems'])
         ->paginate();
     }
 
@@ -72,15 +69,11 @@ class OrderService
         return $order->loadMissing('location', 'orderItems');
     }
 
-    public function cancelOrder(Order $order): JsonResponse
+    public function cancelOrder(Order $order): void
     {
         $order->update(['status' => OrderStatus::CANCELLED]);
-
-        return response()->json(data: [
-            'message' => 'Order cancelled successfully',
-        ], status: 200);
     }
-    public function updateOrder(Order $order, OrderDTO $dto): JsonResponse
+    public function updateOrder(Order $order, OrderDTO $dto): Order
     {
         $order->location->update([
             'address' => $dto->address,
@@ -88,9 +81,6 @@ class OrderService
             'country' => $dto->country,
         ]);
 
-        return response()->json(data: [
-            'message' => 'Order updated successfully',
-            'order' => $order,
-        ], status: 200);
+        return $order->fresh();
     }
 }
